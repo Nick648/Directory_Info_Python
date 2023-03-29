@@ -159,6 +159,7 @@ def find_paths(initial_path: str) -> None:
         # print(f"{dir_path=}; {dir_names=}; {filenames=}")
         dif_level = dir_path.count("\\") - lower_level
         check_path(dir_path, filenames, dif_level)
+        time.sleep(0.01)
     print()
     if PATHS_FILES_DICT:
         create_dir()
