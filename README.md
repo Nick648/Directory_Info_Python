@@ -1,3 +1,3 @@
-# Directory_Info_Python
+# Directory_Info_Python          
 Application and application code with a graphical interface for directory research
 ...
