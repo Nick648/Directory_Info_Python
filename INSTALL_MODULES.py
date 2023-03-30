@@ -27,7 +27,7 @@ def generate_req():  # Generating req.txt with installed modules
     print('*' * 50)
 
 
-def install_module(module='mysql-connector-python'):  # Installing the module manually
+def install_module(module='art'):  # Installing the module manually
     subprocess.check_call([way, '-m', 'pip', 'install', '--upgrade', 'pip'])
     print(f"\t Upgrade pip -> Done!")
     subprocess.check_call([way, '-m', 'pip', 'install', module])
@@ -35,7 +35,7 @@ def install_module(module='mysql-connector-python'):  # Installing the module ma
     print('*' * 50)
 
 
-def uninstall_module(module='mysql-connector-python'):  # Uninstalling the module manually
+def uninstall_module(module='art'):  # Uninstalling the module manually
     subprocess.check_call([way, '-m', 'pip', 'uninstall', module])
     print(f"\t Uninstall module '{module}' -> Done!")
     print('*' * 50)
@@ -52,7 +52,7 @@ def install_modules():  # Module installer from a file
 
 if __name__ == '__main__':
     generate_req()
-    # install_module('mysql-connector-python')
-    # uninstall_module('mysql-connector-python')
+    # install_module('art')
+    # uninstall_module('art')
     # install_modules()
     print(f"\n{'*' * 20} Done! {'*' * 20}")

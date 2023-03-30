@@ -9,6 +9,16 @@ from tkinter import filedialog, messagebox
 WIN_WIDTH, WIN_HEIGHT = 0, 0
 APP_WIDTH, APP_HEIGHT = 400, 600
 
+MEDIA_FILES = ["jpg", "jpeg", "png", "bmp", "dcm", "gif", "ico", "webp", "raw", "svg", "img"]
+VIDEO_FILES = ["mp4", "mov", "avi", "mpeg", "webm", "vob"]
+AUDIO_FILES = ["mp3", "mp2", "wav", "mpc", "wma"]
+DOC_FILES = ["pdf", "wps", "wpd", "txt", "log", "json"]
+FORMAT_FILES = ["doc", "docx", "ppt", "pptx", "xls", "slsx", "odt", "xpc", "xml"]
+DATABASE_FILES = ["pdb", "dbf", "db", "mdb", "sql", "dat"]
+ARCHIVE_FILES = ["zip", "zipx", "rar", "7z", "arj", "tar", "apk"]
+WEBSITE_FILES = ["html", "htm", "xhtml", "php", "js", "apk", "css", "kml"]
+EXECUTABLE_FILES = ["exe", "com", "bat"]
+
 
 def get_size_monitor() -> None:
     """ Sets the screen size value """
@@ -23,6 +33,7 @@ def get_size_monitor() -> None:
 
 class App:
     def __init__(self):
+        self.cb_options = []
         self.selected_op = None
         self.btn_folder = None
         self.lb_valid = None
@@ -30,6 +41,7 @@ class App:
         self.RIGHT_PATH = False
 
         self.root = Tk()
+        self.frame_options = LabelFrame(self.root, text="Options")
         self.set_options_window()
 
     def set_options_window(self) -> None:
@@ -72,9 +84,39 @@ class App:
             self.entry_path.delete(0, END)
             self.entry_path.insert(0, initial_path)
 
+    def create_frame_options(self) -> None:
+        # var = BooleanVar()
+        # var.set(False)
+        options_name = ['Media files', 'Audio files', 'Video files',
+                        'Document files', 'Microsoft filse', 'Database files',
+                        'Archive files', 'Website files', 'Executable files']
+        key_pos = 0
+        for row in range(1, 4):
+            for col in range(1, 4):
+                selected_cb = IntVar()
+                cb = Checkbutton(
+                    self.frame_options, text=options_name[key_pos], variable=selected_cb,
+                    onvalue=1, offvalue=0, command=lambda: self.check_checkbuttons())  # , variable=var
+                cb.grid(row=row, column=col, ipadx=2, ipady=2, padx=2, pady=2, sticky='nw')  # i = item
+                self.cb_options.append((cb, selected_cb, options_name[key_pos]))
+                key_pos += 1
+                # print(cb.keys())
+                print(cb.winfo_name())
+
     def display_options(self) -> None:
         # print(self.selected_op, self.selected_op.get())
-        pass
+        self.frame_options.place(relx=0.07, rely=0.3, anchor=NW)
+        self.root.update()
+
+    def destroy_options(self) -> None:
+        # for widgets in self.frame_options.winfo_children():
+        #     widgets.destroy()
+        self.frame_options.place_forget()
+        self.root.update()
+
+    def check_checkbuttons(self):
+        for item in self.cb_options:
+            print(item[0], item[1], item[1].get())
 
     def add_objects(self) -> None:
         root = self.root
@@ -105,12 +147,16 @@ class App:
 
         # RADIOBUTTON FOR OPTIONS
         self.selected_op = IntVar()
+        self.selected_op.set(0)
         rad_1 = Radiobutton(root, text='All', value=1, variable=self.selected_op,
-                            font=2, activeforeground='yellow')
+                            font=2, activeforeground='yellow', command=self.destroy_options)
         rad_2 = Radiobutton(root, text='Selectively', value=2, variable=self.selected_op,
                             font=2, activeforeground='yellow', command=self.display_options)
         rad_1.place(relx=0.3, rely=0.23, anchor=N)
         rad_2.place(relx=0.7, rely=0.23, anchor=N)
+
+        # CHECKBUTTON FOR OPTIONS
+        self.create_frame_options()
 
         # lb_delimiter = Label(text=f"{'-' * 80}", font=('Times', 20), fg='cyan')
         # lb_delimiter.place(relx=0.5, rely=0.06, anchor=N)

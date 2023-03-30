@@ -171,7 +171,7 @@ def find_paths(initial_path: str) -> None:
         yellow_out("There are no required files in the current directory!")
 
 
-def main():
+def main(): # FIXME: ADD TOTAL FOUND FORMAT FILES AFTER ALL
     """ Start program """
 
     Tk().withdraw()  # we don't want a full GUI, so keep the root window from appearing
