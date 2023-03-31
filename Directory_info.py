@@ -1,13 +1,14 @@
 import os
-import time as tm
 from tkinter import *
-from tkinter import filedialog, messagebox
+from tkinter import filedialog, messagebox, ttk
+from Search_type_files import run_search_types
+from Total_info_files_dir import run_total_search
 
-# CONST
+# CONSTs
 WIN_WIDTH, WIN_HEIGHT = 0, 0
 APP_WIDTH, APP_HEIGHT = 400, 600
-ROW_COUNT = 3
-COL_COUNT = 3
+ROW_OPTIONS_COUNT = 3
+COL_OPTIONS_COUNT = 3
 
 # FILE TYPES
 MEDIA_FILES = ["jpg", "jpeg", "png", "bmp", "dcm", "gif", "ico", "webp", "raw", "svg", "img"]
@@ -43,7 +44,7 @@ class MyCheckButton:
         self.num_button = MyCheckButton.num_button
         self.cb = Checkbutton(
             master, text=title, variable=self.var_select,
-            onvalue=1, offvalue=0)  # command=lambda: self.check_checkbuttons()
+            onvalue=1, offvalue=0)  # command=lambda: print(self.title)
         if row == -1 and col == -1:
             self.cb.pack(side=LEFT)
         else:
@@ -52,17 +53,19 @@ class MyCheckButton:
 
 class App:
     def __init__(self):
-        self.btn_start = None
+        # Main window
+        self.root = Tk()
+        # Elements
+        self.btn_start = Button(master=self.root)
         self.cb_options = []
         self.rad_options = []
-        self.selected_op = None
-        self.btn_folder = None
-        self.lb_valid = None
-        self.entry_path = None
+        self.selected_op = IntVar()
+        self.btn_folder = Button(master=self.root)
+        self.lb_valid = Label(master=self.root)
+        self.entry_path = Entry(master=self.root)
         self.correct_path = False
-
-        self.root = Tk()
-        self.frame_options = LabelFrame(self.root, text="Options")
+        self.frame_options = LabelFrame(master=self.root, text="Options")
+        # Creating another configurations
         self.set_options_window()
 
     def set_options_window(self) -> None:
@@ -78,7 +81,7 @@ class App:
     def set_configure(self) -> None:
         self.root.title("Directory Info")
         # self.root.configure(background="grey")
-        # root.wm_attributes('-transparentcolor', root['bg'])  # Прозрачное приложение!
+        # self.root.wm_attributes('-transparentcolor', self.root['bg'])  # Прозрачное приложение!
 
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)  # Add event for close window
 
@@ -109,8 +112,8 @@ class App:
                         'Document files', 'Microsoft files', 'Database files',
                         'Archive files', 'Website files', 'Executable files']
         key_pos = 0
-        for row in range(1, ROW_COUNT + 1):
-            for col in range(1, COL_COUNT + 1):
+        for row in range(1, ROW_OPTIONS_COUNT + 1):
+            for col in range(1, COL_OPTIONS_COUNT + 1):
                 cb = MyCheckButton(master=self.frame_options, title=options_name[key_pos], row=row, col=col)
                 self.cb_options.append(cb)
                 key_pos += 1
@@ -119,7 +122,8 @@ class App:
         self.frame_options.place(relx=0.07, rely=0.3, anchor=NW)
         self.root.update()
 
-    def destroy_options(self) -> None:
+    def hide_options(self) -> None:
+        # Do not uncomment, otherwise delete. (Created once)!
         # for widgets in self.frame_options.winfo_children():
         #     widgets.destroy()
         self.frame_options.place_forget()
@@ -137,25 +141,45 @@ class App:
         self.root.update()
 
     def activate_object(self) -> None:
+        self.lb_valid['text'] = ''
         self.entry_path['state'] = 'normal'
+        self.entry_path.delete(0, END)
         self.btn_folder['state'] = 'normal'
+        self.selected_op.set(0)
         for item_rad in self.rad_options:
             item_rad['state'] = 'normal'
+            item_rad.deselect()
         for item_cb in self.cb_options:
             item_cb.cb['state'] = 'normal'
+            item_cb.cb.deselect()
+        self.hide_options()
         self.btn_start['bg'] = 'green'
         self.btn_start['state'] = 'normal'
+        self.correct_path = False
         self.root.update()
 
-    def start_app(self) -> None:
+    def start_app(self) -> None:  # FIXME: ADD THREAD
         if not self.correct_path:
             messagebox.showerror(title="Error", message="Enter the correct path to the folder!")
             return
         if self.selected_op.get() != 1 and self.selected_op.get() != 2:
             messagebox.showwarning(title="Warning", message="You need to select the search parameter!")
             return
+
         if self.selected_op.get() == 1:
             self.disable_objects()
+            progress_bar = ttk.Progressbar(master=self.root, orient="horizontal", length=170, value=0)
+            progress_bar.place(relx=0.5, rely=0.78, anchor=N)
+            # FIXME: ADD iridescent color
+            lb_step = Label(master=self.root, text='', font=('Arial', 12, 'italic', 'bold'), fg='orange red')
+            lb_step.place(relx=0.5, rely=0.73, anchor=N)
+            report = run_total_search(initial_path=self.entry_path.get(),
+                                      progress_bar=progress_bar, lb_step=lb_step)
+            messagebox.showinfo(title="Feedback report", message=report)
+            progress_bar.destroy()
+            lb_step.destroy()
+            self.activate_object()
+
         if self.selected_op.get() == 2:
             types_search_files = []
             for cb_item in self.cb_options:
@@ -164,20 +188,30 @@ class App:
                     name_cb = cb_item.title.replace(' ', '_').upper()
                     for type_file in globals()[name_cb]:  # accessing a variable via a string
                         types_search_files.append('.' + type_file)
-            print(f'{types_search_files=}')
+            # print(f'{types_search_files=}')
             if types_search_files:
                 self.disable_objects()
+                progress_bar = ttk.Progressbar(master=self.root, orient="horizontal", length=170, value=0)
+                progress_bar.place(relx=0.5, rely=0.78, anchor=N)
+                # FIXME: ADD iridescent color
+                lb_step = Label(master=self.root, text='', font=('Arial', 12, 'italic', 'bold'), fg='orange red')
+                lb_step.place(relx=0.5, rely=0.73, anchor=N)
+                report = run_search_types(initial_path=self.entry_path.get(),
+                                          search_type_files=types_search_files,
+                                          progress_bar=progress_bar, lb_step=lb_step)
+                messagebox.showinfo(title="Feedback report", message=report)
+                progress_bar.destroy()
+                lb_step.destroy()
+                self.activate_object()
             else:
                 messagebox.showwarning(title="Warning", message="You need to select the search parameters!")
                 return
-        # self.btn_start['state'] = 'normal'
 
     def add_objects(self) -> None:
         root = self.root
         # TITLE
         lb_title = Label(text='DIR_INFO', font=('Times', 20, 'italic', 'bold'), fg='magenta')
-        # lb_title.place(relx=0.5, rely=0.01, anchor=N)
-        lb_title.pack(anchor=N, pady=7)
+        lb_title.place(relx=0.5, rely=0.015, anchor=N)
 
         # ENTRY PATH
         check = (root.register(self.is_valid), "%P")
@@ -190,8 +224,8 @@ class App:
         # BUTTON FOR PATH
         photo_folder = PhotoImage(file=r"data\folder.png")  # icon button
         photo_folder = photo_folder.subsample(16, 16)  # photo size reduction (less)
-        self.btn_folder = Button(root, command=self.get_initial_path, image=photo_folder, activebackground="pink",
-                                 borderwidth=0)
+        self.btn_folder = Button(master=root, command=self.get_initial_path, image=photo_folder,
+                                 activebackground="pink", borderwidth=0)
         self.btn_folder.image = photo_folder
         self.btn_folder.place(relx=0.865, rely=0.088, anchor=NW)
 
@@ -203,7 +237,7 @@ class App:
         self.selected_op = IntVar()
         self.selected_op.set(0)
         rad_1 = Radiobutton(root, text='All', value=1, variable=self.selected_op,
-                            font=2, activeforeground='yellow', command=self.destroy_options)
+                            font=2, activeforeground='yellow', command=self.hide_options)
         rad_2 = Radiobutton(root, text='Selectively', value=2, variable=self.selected_op,
                             font=2, activeforeground='yellow', command=self.display_options)
         self.rad_options.append(rad_1)
@@ -229,7 +263,6 @@ class App:
     def on_closing(self) -> None:
         if messagebox.askokcancel("Quit", "Do you want to quit?"):
             self.root.destroy()
-            tm.sleep(1)
             exit()
 
 
