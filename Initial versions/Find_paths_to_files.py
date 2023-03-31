@@ -32,6 +32,7 @@ WAY_DIR = os.path.join(CUR_DIR, NAME_DIR)
 # Files to search for
 SEARCH_FILES = [".jpg", ".jpeg", ".png", ".mov", ".mp4", ".mp3"]
 PATHS_FILES_DICT = {}
+TOTAL_COUNT_FILES = {}
 
 
 def error_out(text: str) -> None:
@@ -100,7 +101,7 @@ def path_tree_to_html_str(initial_path: str, dict_paths: dict) -> str:
         # str_html += f"&emsp;&emsp;<font color=Magenta>Current path:&nbsp;{path}</font><br>"
         dif_level = dict_paths[path]["Level"]
         tree_html += f"{'&emsp;' * dif_level * 2}{path}<br>"
-    tree_html += f"</font><br>"
+    tree_html += f"</font><br><br>"
     return tree_html
 
 
@@ -117,12 +118,22 @@ def dict_total_info_to_str_html(dict_paths: dict) -> str:
             else:
                 str_html += f"{key_info}:&nbsp;{dict_paths[path][key_info]}<br>"
         str_html += f"<font color=DarkOrange>{'*' * 150}</font><br>"
-    str_html += f"</font><br><br><br>"
+    str_html += f"</font><br><br>"
+    return str_html
+
+
+def total_count_types_to_str_html(dict_types: dict) -> str:
+    str_html = f"<font color='green' size=7>Total number of file types</font><br><br>"
+    str_html += f"<font size=5>"
+    str_html += f"<b>&emsp;&emsp;{'Type':5}:&nbsp;{'Count':5};</b><br>"
+    for key_type in dict_types:
+        str_html += f"&emsp;&emsp;{key_type:5}:&nbsp;{dict_types[key_type]:5};<br>"
+    str_html += f"</font><br><br>"
     return str_html
 
 
 def check_path(dir_path: str, filenames: list[str], dif_level: int) -> bool:
-    global PATHS_FILES_DICT
+    global PATHS_FILES_DICT, TOTAL_COUNT_FILES
     dict_found_files = {}
     total_found_files = 0
     list_filenames = []
@@ -143,6 +154,13 @@ def check_path(dir_path: str, filenames: list[str], dif_level: int) -> bool:
                             "Formats (count)": dict_found_files
                             }
         PATHS_FILES_DICT[dir_path] = info_found_files
+
+        for type_file in dict_found_files:
+            if type_file in TOTAL_COUNT_FILES:
+                TOTAL_COUNT_FILES[type_file] += dict_found_files[type_file]
+            else:
+                TOTAL_COUNT_FILES[type_file] = dict_found_files[type_file]
+
         return True
     return False
 
@@ -160,18 +178,24 @@ def find_paths(initial_path: str) -> None:
         dif_level = dir_path.count("\\") - lower_level
         check_path(dir_path, filenames, dif_level)
         time.sleep(0.01)
-    print()
     if PATHS_FILES_DICT:
         create_dir()
+        sorted_format_files = dict(sorted(TOTAL_COUNT_FILES.items(), key=lambda x: x[1], reverse=True))
         write_data_json("Info found files", PATHS_FILES_DICT)
+        write_data_json("Total number of file types", sorted_format_files)
+
         str_html = dict_total_info_to_str_html(PATHS_FILES_DICT)
-        str_html += path_tree_to_html_str(initial_path, PATHS_FILES_DICT)
         write_data_html("Info found files", str_html)
+
+        total_info_str_html = path_tree_to_html_str(initial_path, PATHS_FILES_DICT)
+        total_info_str_html += total_count_types_to_str_html(sorted_format_files)
+        write_data_html("Total number of file types", total_info_str_html)
+
     else:
         yellow_out("There are no required files in the current directory!")
 
 
-def main(): # FIXME: ADD TOTAL FOUND FORMAT FILES AFTER ALL
+def main():
     """ Start program """
 
     Tk().withdraw()  # we don't want a full GUI, so keep the root window from appearing
