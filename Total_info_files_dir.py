@@ -307,24 +307,45 @@ def get_dict_total_info(initial_path: str) -> dict:
     return total_info_dict
 
 
+def update_tkinter_window(progress_bar: ttk.Progressbar, lb_step: Label, current_step: int, max_val: int,
+                          colors_dict: dict, step_color: float) -> None:
+    current_style = ttk.Style()
+    current_style.theme_use('alt')
+    colors_dict['red'] -= step_color
+    colors_dict['green'] += step_color
+    if colors_dict['red'] < 0:
+        colors_dict['red'] = 0
+    if colors_dict['green'] > 255:
+        colors_dict['green'] = 255
+    progress_bar.step()
+    lb_step['text'] = f"Step {current_step}/{max_val}"
+    red_color, green_color = int(colors_dict['red']), int(colors_dict['green'])
+    new_color = f"#{red_color:0>2x}{green_color:0>2x}00"
+    current_style.configure('new_color.Horizontal.TProgressbar', background=new_color)
+    progress_bar.config(style='new_color.Horizontal.TProgressbar')
+    lb_step.configure(fg=new_color)
+    lb_step.update()
+    progress_bar.update()
+
+
 def run_total_search(initial_path: str, progress_bar: ttk.Progressbar, lb_step: Label) -> str:
     """ Main algorithm of program """
+    # parameters for tkinter
     max_val = 0
     for _ in os.walk(initial_path):
         max_val += 1
     progress_bar['maximum'] = max_val
+    colors_dict = {'red': 255, 'green': 0, 'blue': 0}
+    step_color = 255 / max_val
     current_step = 0
+    time_pause = 1 / max_val
 
     lower_level = initial_path.count("\\")
     for dir_path, dir_names, filenames in os.walk(initial_path):  # , topdown=False
         current_step += 1
-        progress_bar.step()
-        lb_step['text'] = f"Step {current_step}/{max_val}"
-        lb_step.update()
-        progress_bar.update()
-
+        update_tkinter_window(progress_bar, lb_step, current_step, max_val, colors_dict, step_color)
         parse_info_abot_files(dir_path=dir_path, dir_names=dir_names, filenames=filenames, lower_level=lower_level)
-        time.sleep(0.15)
+        time.sleep(time_pause)
 
     if TOTAL_DIRS or TOTAL_FILES:
         report_str = ''

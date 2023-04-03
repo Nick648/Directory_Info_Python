@@ -62,7 +62,8 @@ class App:
         self.selected_op = IntVar()
         self.btn_folder = Button(master=self.root)
         self.lb_valid = Label(master=self.root)
-        self.entry_path = Entry(master=self.root)
+        self.entry_path_parse = Entry(master=self.root)
+        self.entry_path_save = Entry(master=self.root)
         self.correct_path = False
         self.frame_options = LabelFrame(master=self.root, text="Options")
         # Creating another configurations
@@ -104,8 +105,8 @@ class App:
         # Tk().withdraw()  # we don't want a full GUI, so keep the root window from appearing
         initial_path = filedialog.askdirectory(title="Select a folder", initialdir="/")
         if os.path.exists(initial_path):
-            self.entry_path.delete(0, END)
-            self.entry_path.insert(0, initial_path)
+            self.entry_path_save.delete(0, END)
+            self.entry_path_save.insert(0, initial_path)
 
     def create_frame_options(self) -> None:
         options_name = ['Media files', 'Audio files', 'Video files',
@@ -130,7 +131,7 @@ class App:
         self.root.update()
 
     def disable_objects(self) -> None:
-        self.entry_path['state'] = 'disabled'
+        self.entry_path_save['state'] = 'disabled'
         self.btn_folder['state'] = 'disabled'
         for item_rad in self.rad_options:
             item_rad['state'] = 'disabled'
@@ -142,8 +143,8 @@ class App:
 
     def activate_object(self) -> None:
         self.lb_valid['text'] = ''
-        self.entry_path['state'] = 'normal'
-        self.entry_path.delete(0, END)
+        self.entry_path_save['state'] = 'normal'
+        self.entry_path_save.delete(0, END)
         self.btn_folder['state'] = 'normal'
         self.selected_op.set(0)
         for item_rad in self.rad_options:
@@ -170,10 +171,9 @@ class App:
             self.disable_objects()
             progress_bar = ttk.Progressbar(master=self.root, orient="horizontal", length=170, value=0)
             progress_bar.place(relx=0.5, rely=0.78, anchor=N)
-            # FIXME: ADD iridescent color
             lb_step = Label(master=self.root, text='', font=('Arial', 12, 'italic', 'bold'), fg='orange red')
             lb_step.place(relx=0.5, rely=0.73, anchor=N)
-            report = run_total_search(initial_path=self.entry_path.get(),
+            report = run_total_search(initial_path=self.entry_path_save.get(),
                                       progress_bar=progress_bar, lb_step=lb_step)
             messagebox.showinfo(title="Feedback report", message=report)
             progress_bar.destroy()
@@ -193,10 +193,9 @@ class App:
                 self.disable_objects()
                 progress_bar = ttk.Progressbar(master=self.root, orient="horizontal", length=170, value=0)
                 progress_bar.place(relx=0.5, rely=0.78, anchor=N)
-                # FIXME: ADD iridescent color
                 lb_step = Label(master=self.root, text='', font=('Arial', 12, 'italic', 'bold'), fg='orange red')
                 lb_step.place(relx=0.5, rely=0.73, anchor=N)
-                report = run_search_types(initial_path=self.entry_path.get(),
+                report = run_search_types(initial_path=self.entry_path_save.get(),
                                           search_type_files=types_search_files,
                                           progress_bar=progress_bar, lb_step=lb_step)
                 messagebox.showinfo(title="Feedback report", message=report)
@@ -213,11 +212,18 @@ class App:
         lb_title = Label(text='DIR_INFO', font=('Times', 20, 'italic', 'bold'), fg='magenta')
         lb_title.place(relx=0.5, rely=0.015, anchor=N)
 
-        # ENTRY PATH
+        # LABEL PATH FOR PARSING
+        lb_path_parsing = Label(master=root, text='Path for parsing', font=('Arial', 8, 'italic'), fg='black')
+        # lb_path_saving = Label(master=root, text='Path to save the result', font=('Arial', 8, 'italic'), fg='black')
+        lb_path_parsing.place(relx=0.06, rely=0.067, anchor=NW)
+
+        # ENTRY PATH PARSING
         check = (root.register(self.is_valid), "%P")
-        self.entry_path = Entry(validate="key", validatecommand=check, width=34, bg='light grey',
-                                font=('Times', 13,), fg='purple', cursor='pencil')
-        self.entry_path.place(relx=0.05, rely=0.1, anchor=NW)
+        self.entry_path_save = Entry(validate="key", validatecommand=check, width=34, bg='light grey',
+                                     font=('Times', 13,), fg='purple', cursor='pencil')
+        self.entry_path_save.place(relx=0.05, rely=0.1, anchor=NW)
+
+        # LABEL VALID PATH
         self.lb_valid = Label(text='', font=('Times', 8))
         self.lb_valid.place(relx=0.1, rely=0.136, anchor=NW)
 
@@ -228,6 +234,16 @@ class App:
                                  activebackground="pink", borderwidth=0)
         self.btn_folder.image = photo_folder
         self.btn_folder.place(relx=0.865, rely=0.088, anchor=NW)
+
+        # FIXME: ADD ENTRY PATH TO SAVE RESULT
+        # # LABEL PATH TO SAVE
+        # lb_path_saving = Label(master=root, text='Path to save the result', font=('Arial', 8, 'italic'), fg='black')
+        # lb_path_saving.place(relx=0.06, rely=0.067, anchor=NW)
+        #
+        # # ENTRY PATH SAVE
+        # self.entry_path_save = Entry(validate="key", width=34, bg='light grey',
+        #                              font=('Times', 13,), fg='purple', cursor='pencil')
+        # self.entry_path_save.place(relx=0.05, rely=0.1, anchor=NW)
 
         # LABEL PARAMETERS
         options_label = Label(text='Data collection parameters', font=('Arial', 14, 'italic', 'bold'), fg='maroon1')

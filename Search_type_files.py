@@ -129,25 +129,46 @@ def check_path(dir_path: str, filenames: list[str], lower_level: int, search_typ
     return False
 
 
+def update_tkinter_window(progress_bar: ttk.Progressbar, lb_step: Label, current_step: int, max_val: int,
+                          colors_dict: dict, step_color: float) -> None:
+    current_style = ttk.Style()
+    current_style.theme_use('alt')
+    colors_dict['red'] -= step_color
+    colors_dict['green'] += step_color
+    if colors_dict['red'] < 0:
+        colors_dict['red'] = 0
+    if colors_dict['green'] > 255:
+        colors_dict['green'] = 255
+    progress_bar.step()
+    lb_step['text'] = f"Step {current_step}/{max_val}"
+    red_color, green_color = int(colors_dict['red']), int(colors_dict['green'])
+    new_color = f"#{red_color:0>2x}{green_color:0>2x}00"
+    current_style.configure('new_color.Horizontal.TProgressbar', background=new_color)
+    progress_bar.config(style='new_color.Horizontal.TProgressbar')
+    lb_step.configure(fg=new_color)
+    lb_step.update()
+    progress_bar.update()
+
+
 def run_search_types(initial_path: str, search_type_files: list[str], progress_bar: ttk.Progressbar,
                      lb_step: Label) -> str:
     """ Main algorithm of program """
+    # parameters for tkinter
     max_val = 0
     for _ in os.walk(initial_path):
         max_val += 1
     progress_bar['maximum'] = max_val
+    colors_dict = {'red': 255, 'green': 0, 'blue': 0}
+    step_color = 255 / max_val
     current_step = 0
+    time_pause = 1 / max_val
 
     lower_level = initial_path.count("\\")
     for dir_path, dir_names, filenames in os.walk(initial_path):  # , topdown=False
         current_step += 1
-        progress_bar.step()
-        lb_step['text'] = f"Step {current_step}/{max_val}"
-        lb_step.update()
-        progress_bar.update()
-
+        update_tkinter_window(progress_bar, lb_step, current_step, max_val, colors_dict, step_color)
         check_path(dir_path=dir_path, filenames=filenames, lower_level=lower_level, search_type_files=search_type_files)
-        time.sleep(0.015)
+        time.sleep(time_pause)
 
     if PATHS_FILES_DICT:
         report_str = ''
