@@ -1,8 +1,9 @@
 import os
 import time
-from tkinter import ttk, Label
 import json
 import datetime
+from tkinter import ttk, Label
+from Common_functions import update_tkinter_window
 
 # Consts for time and date
 today = datetime.datetime.today()
@@ -19,8 +20,21 @@ WAY_DIR = os.path.join(CUR_DIR, NAME_DIR)
 
 # INFO OF FILES
 INFO_PATHS_FOR_JSON = dict()
-FORMAT_FILES, SIZE_DIRS = dict(), dict()
+TOTAL_FORMAT_FILES, SIZE_DIRS = dict(), dict()
 TOTAL_FILES, TOTAL_DIRS, TOTAL_SIZE = 0, 0, 0
+
+
+def zeroing_values() -> None:
+    """ Clearing old values before a new call """
+    global today, date_y, date_m, date_d, NAME_DIR, WAY_DIR, INFO_PATHS_FOR_JSON, TOTAL_FORMAT_FILES, SIZE_DIRS, \
+        TOTAL_FILES, TOTAL_DIRS, TOTAL_SIZE
+    today = datetime.datetime.today()
+    date_y, date_m, date_d = today.year, today.month, today.day
+    NAME_DIR = f'{MAIN_NAME_DIR} {date_d}_{date_m}_{date_y}'
+    WAY_DIR = os.path.join(CUR_DIR, NAME_DIR)
+    INFO_PATHS_FOR_JSON = dict()
+    TOTAL_FORMAT_FILES, SIZE_DIRS = dict(), dict()
+    TOTAL_FILES, TOTAL_DIRS, TOTAL_SIZE = 0, 0, 0
 
 
 def create_dir() -> str:
@@ -262,7 +276,7 @@ def get_dict_info_dir_path(dir_names: list, filenames: list, format_files_dir: d
 
 
 def parse_info_abot_files(dir_path: str, dir_names: list[str], filenames: list[str], lower_level: int):
-    global FORMAT_FILES, SIZE_DIRS, TOTAL_FILES, TOTAL_DIRS, TOTAL_SIZE, INFO_PATHS_FOR_JSON
+    global TOTAL_FORMAT_FILES, SIZE_DIRS, TOTAL_FILES, TOTAL_DIRS, TOTAL_SIZE, INFO_PATHS_FOR_JSON
     total_size_dir = 0
     TOTAL_FILES += len(filenames)
     TOTAL_DIRS += len(dir_names)
@@ -272,20 +286,20 @@ def parse_info_abot_files(dir_path: str, dir_names: list[str], filenames: list[s
         path_name = os.path.join(dir_path, name)
         total_size_dir += os.path.getsize(path_name)  # os.stat(path_name).st_size
 
-        if name.rfind('.') != -1:
-            key = name[name.rfind('.'):].lower()
-        else:
-            key = name.lower()
+        cur_file_name, file_extension = os.path.splitext(name)
+        file_extension = file_extension.lower()
+        if not file_extension:
+            file_extension = 'None'
 
-        if key in FORMAT_FILES:
-            FORMAT_FILES[key] += 1
+        if file_extension in TOTAL_FORMAT_FILES:
+            TOTAL_FORMAT_FILES[file_extension] += 1
         else:
-            FORMAT_FILES[key] = 1
+            TOTAL_FORMAT_FILES[file_extension] = 1
 
-        if key in format_files_dir:
-            format_files_dir[key] += 1
+        if file_extension in format_files_dir:
+            format_files_dir[file_extension] += 1
         else:
-            format_files_dir[key] = 1
+            format_files_dir[file_extension] = 1
 
     TOTAL_SIZE += total_size_dir
     SIZE_DIRS[dir_path] = total_size_dir
@@ -301,35 +315,23 @@ def get_dict_total_info(initial_path: str) -> dict:
     total_info_dict["Total folders"] = TOTAL_DIRS
     total_info_dict["Total files"] = TOTAL_FILES
     total_info_dict["Total size"] = get_str_size(TOTAL_SIZE)
-    total_info_dict["Number of formats"] = len(FORMAT_FILES)
-    sorted_format_files = dict(sorted(FORMAT_FILES.items(), key=lambda x: x[1], reverse=True))
+    total_info_dict["Number of formats"] = len(TOTAL_FORMAT_FILES)
+    sorted_format_files = dict(sorted(TOTAL_FORMAT_FILES.items(), key=lambda x: x[1], reverse=True))
     total_info_dict["Formats (count)"] = sorted_format_files
     return total_info_dict
 
 
-def update_tkinter_window(progress_bar: ttk.Progressbar, lb_step: Label, current_step: int, max_val: int,
-                          colors_dict: dict, step_color: float) -> None:
-    current_style = ttk.Style()
-    current_style.theme_use('alt')
-    colors_dict['red'] -= step_color
-    colors_dict['green'] += step_color
-    if colors_dict['red'] < 0:
-        colors_dict['red'] = 0
-    if colors_dict['green'] > 255:
-        colors_dict['green'] = 255
-    progress_bar.step()
-    lb_step['text'] = f"Step {current_step}/{max_val}"
-    red_color, green_color = int(colors_dict['red']), int(colors_dict['green'])
-    new_color = f"#{red_color:0>2x}{green_color:0>2x}00"
-    current_style.configure('new_color.Horizontal.TProgressbar', background=new_color)
-    progress_bar.config(style='new_color.Horizontal.TProgressbar')
-    lb_step.configure(fg=new_color)
-    lb_step.update()
-    progress_bar.update()
-
-
-def run_total_search(initial_path: str, progress_bar: ttk.Progressbar, lb_step: Label) -> str:
+def run_total_search(initial_path: str, progress_bar: ttk.Progressbar, lb_step: Label, path_for_save: str = '') -> str:
     """ Main algorithm of program """
+    # deleting old values!
+    zeroing_values()
+
+    # setting the path to save
+    if path_for_save:
+        global CUR_DIR, WAY_DIR
+        CUR_DIR = path_for_save
+        WAY_DIR = os.path.join(CUR_DIR, NAME_DIR)
+
     # parameters for tkinter
     max_val = 0
     for _ in os.walk(initial_path):
@@ -343,7 +345,8 @@ def run_total_search(initial_path: str, progress_bar: ttk.Progressbar, lb_step: 
     lower_level = initial_path.count("\\")
     for dir_path, dir_names, filenames in os.walk(initial_path):  # , topdown=False
         current_step += 1
-        update_tkinter_window(progress_bar, lb_step, current_step, max_val, colors_dict, step_color)
+        update_tkinter_window(progress_bar=progress_bar, lb_step=lb_step, current_step=current_step,
+                              max_val=max_val, colors_dict=colors_dict, step_color=step_color)
         parse_info_abot_files(dir_path=dir_path, dir_names=dir_names, filenames=filenames, lower_level=lower_level)
         time.sleep(time_pause)
 

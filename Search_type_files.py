@@ -3,6 +3,7 @@ import time
 import json
 import datetime
 from tkinter import ttk, Label
+from Common_functions import update_tkinter_window
 
 # Consts for time and date
 today = datetime.datetime.today()
@@ -20,6 +21,17 @@ WAY_DIR = os.path.join(CUR_DIR, NAME_DIR)
 # Files to search for
 PATHS_FILES_DICT = {}
 TOTAL_COUNT_FILES = {}
+
+
+def zeroing_values() -> None:
+    """ Clearing old values before a new call """
+    global today, date_y, date_m, date_d, NAME_DIR, WAY_DIR, PATHS_FILES_DICT, TOTAL_COUNT_FILES
+    today = datetime.datetime.today()
+    date_y, date_m, date_d = today.year, today.month, today.day
+    NAME_DIR = f'{MAIN_NAME_DIR} {date_d}_{date_m}_{date_y}'
+    WAY_DIR = os.path.join(CUR_DIR, NAME_DIR)
+    PATHS_FILES_DICT = {}
+    TOTAL_COUNT_FILES = {}
 
 
 def create_dir() -> str:
@@ -87,6 +99,8 @@ def dict_total_info_to_str_html(dict_paths: dict) -> str:
 
 def total_count_types_to_str_html(dict_types: dict) -> str:
     str_html = f"<font color='green' size=7>Total number of file types</font><br><br>"
+    total_count_files = sum([dict_types[key_type] for key_type in dict_types])
+    str_html += f"<font size=6 color=brown>&emsp;Total files found: {total_count_files}</font><br>"
     str_html += f"<font size=5>"
     str_html += f"<b>&emsp;&emsp;{'Type':5}:&nbsp;{'Count':5};</b><br>"
     for key_type in dict_types:
@@ -102,14 +116,16 @@ def check_path(dir_path: str, filenames: list[str], lower_level: int, search_typ
     list_filenames = []
     dif_level = dir_path.count("\\") - lower_level
     for file in filenames:
-        for search_file in search_type_files:
-            if search_file.lower() in file.lower():
-                total_found_files += 1
-                list_filenames.append(file)
-                if search_file.lower() in dict_found_files:
-                    dict_found_files[search_file.lower()] += 1
-                else:
-                    dict_found_files[search_file.lower()] = 1
+        cur_file_name, file_extension = os.path.splitext(file)
+        file_extension = file_extension.lower()
+        if file_extension in search_type_files:
+            total_found_files += 1
+            list_filenames.append(file)
+            if file_extension in dict_found_files:
+                dict_found_files[file_extension] += 1
+            else:
+                dict_found_files[file_extension] = 1
+
     if total_found_files:
         info_found_files = {"Level": dif_level,
                             "List of found files": list_filenames,
@@ -129,30 +145,18 @@ def check_path(dir_path: str, filenames: list[str], lower_level: int, search_typ
     return False
 
 
-def update_tkinter_window(progress_bar: ttk.Progressbar, lb_step: Label, current_step: int, max_val: int,
-                          colors_dict: dict, step_color: float) -> None:
-    current_style = ttk.Style()
-    current_style.theme_use('alt')
-    colors_dict['red'] -= step_color
-    colors_dict['green'] += step_color
-    if colors_dict['red'] < 0:
-        colors_dict['red'] = 0
-    if colors_dict['green'] > 255:
-        colors_dict['green'] = 255
-    progress_bar.step()
-    lb_step['text'] = f"Step {current_step}/{max_val}"
-    red_color, green_color = int(colors_dict['red']), int(colors_dict['green'])
-    new_color = f"#{red_color:0>2x}{green_color:0>2x}00"
-    current_style.configure('new_color.Horizontal.TProgressbar', background=new_color)
-    progress_bar.config(style='new_color.Horizontal.TProgressbar')
-    lb_step.configure(fg=new_color)
-    lb_step.update()
-    progress_bar.update()
-
-
 def run_search_types(initial_path: str, search_type_files: list[str], progress_bar: ttk.Progressbar,
-                     lb_step: Label) -> str:
+                     lb_step: Label, path_for_save: str = '') -> str:
     """ Main algorithm of program """
+    # deleting old values!
+    zeroing_values()
+
+    # setting the path to save
+    if path_for_save:
+        global CUR_DIR, WAY_DIR
+        CUR_DIR = path_for_save
+        WAY_DIR = os.path.join(CUR_DIR, NAME_DIR)
+
     # parameters for tkinter
     max_val = 0
     for _ in os.walk(initial_path):
@@ -166,7 +170,8 @@ def run_search_types(initial_path: str, search_type_files: list[str], progress_b
     lower_level = initial_path.count("\\")
     for dir_path, dir_names, filenames in os.walk(initial_path):  # , topdown=False
         current_step += 1
-        update_tkinter_window(progress_bar, lb_step, current_step, max_val, colors_dict, step_color)
+        update_tkinter_window(progress_bar=progress_bar, lb_step=lb_step, current_step=current_step,
+                              max_val=max_val, colors_dict=colors_dict, step_color=step_color)
         check_path(dir_path=dir_path, filenames=filenames, lower_level=lower_level, search_type_files=search_type_files)
         time.sleep(time_pause)
 

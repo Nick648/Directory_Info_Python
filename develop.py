@@ -1,4 +1,11 @@
 import tkinter as tk
+import magic
+
+
+def mime_magic():  # Not good
+    path = input('path: ')
+    print(magic.Magic(mime=True).from_file(path))  # mime-тип
+    return magic.Magic(mime=True).from_file(path)
 
 
 def check_1():
@@ -42,8 +49,9 @@ def check_3():
     ws.mainloop()
 
 
+
 if __name__ == '__main__':
-    print(1/234)
+    pass
     # check_1()
     # check_2()
     # check_3()
