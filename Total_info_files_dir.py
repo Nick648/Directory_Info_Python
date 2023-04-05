@@ -1,9 +1,8 @@
 import os
 import time
-import json
 import datetime
 from tkinter import ttk, Label
-from Common_functions import update_tkinter_window
+from Common_functions import update_tkinter_window, write_data_json, write_data_html, write_data_txt
 
 # Consts for time and date
 today = datetime.datetime.today()
@@ -56,30 +55,6 @@ def create_dir() -> str:
     return f"Folder: {WAY_DIR} -> was created!\n\n"
 
 
-def write_data_json(file_name: str, dump_dict: dict) -> str:
-    """ Writes the dictionary to a json file """
-    file_path = os.path.join(WAY_DIR, f"{file_name}.json")
-    with open(file=file_path, mode="w", encoding="utf-8") as write_file:
-        json.dump(dump_dict, write_file, ensure_ascii=False, indent=5)
-    return f"  File: {file_name}.json -> was created!\n"  # or file_path
-
-
-def write_data_txt(file_name: str, write_text: str) -> str:
-    """ Writes the text to a txt file """
-    file_path = os.path.join(WAY_DIR, f"{file_name}.txt")
-    with open(file=file_path, mode="w", encoding="utf-8") as txt_file:
-        txt_file.write(write_text)
-    return f"  File: {file_name}.txt -> was created!\n"  # or file_path
-
-
-def write_data_html(file_name: str, write_text: str) -> str:
-    """ Writes the text to a html file """
-    file_path = os.path.join(WAY_DIR, f"{file_name}.html")
-    with open(file=file_path, mode="w", encoding="utf-8") as html_file:
-        html_file.write(write_text)
-    return f"  File: {file_name}.html -> was created!\n"  # or file_path
-
-
 def write_dict_info_paths_to_html(file_name: str, dict_paths: dict) -> str:
     str_html = f"<font color='green' size=7>{file_name}</font><br><br>"
     str_html += f"<font size=4>"
@@ -92,7 +67,7 @@ def write_dict_info_paths_to_html(file_name: str, dict_paths: dict) -> str:
                 str_html += f"{key_info}:&nbsp;{dict_paths[path][key_info]}<br>"
         str_html += f"<font color=DarkOrange size=5>{'*' * 150}</font><br>"
 
-    return write_data_html(file_name, str_html)
+    return write_data_html(way_dir=WAY_DIR, file_name=file_name, write_text=str_html)
 
 
 def write_dict_total_info_path_to_html(file_name: str, dict_path_info: dict) -> str:
@@ -109,7 +84,7 @@ def write_dict_total_info_path_to_html(file_name: str, dict_path_info: dict) -> 
             str_html += f"{key_info}:&nbsp;{dict_path_info[key_info]}<br>"
     str_html += f"</font><br>"
 
-    return write_data_html(file_name, str_html)
+    return write_data_html(way_dir=WAY_DIR, file_name=file_name, write_text=str_html)
 
 
 def write_tree_dir_html_txt(initial_path: str, size_dirs: dict) -> str:
@@ -203,8 +178,8 @@ def write_tree_dir_html_txt(initial_path: str, size_dirs: dict) -> str:
         pass
 
     report_str = ''
-    report_str += write_data_txt("Directory tree", tree_str)
-    report_str += write_data_html("Directory tree", tree_html)
+    report_str += write_data_txt(way_dir=WAY_DIR, file_name="Directory tree", write_text=tree_str)
+    report_str += write_data_html(way_dir=WAY_DIR, file_name="Directory tree", write_text=tree_html)
     return report_str
 
 
@@ -323,12 +298,13 @@ def get_dict_total_info(initial_path: str) -> dict:
 
 def run_total_search(initial_path: str, progress_bar: ttk.Progressbar, lb_step: Label, path_for_save: str = '') -> str:
     """ Main algorithm of program """
+    global CUR_DIR, WAY_DIR
+
     # deleting old values!
     zeroing_values()
 
     # setting the path to save
     if path_for_save:
-        global CUR_DIR, WAY_DIR
         CUR_DIR = path_for_save
         WAY_DIR = os.path.join(CUR_DIR, NAME_DIR)
 
@@ -354,11 +330,11 @@ def run_total_search(initial_path: str, progress_bar: ttk.Progressbar, lb_step: 
         report_str = ''
         report_str += create_dir()
 
-        report_str += write_data_json("Detailed info dirs", INFO_PATHS_FOR_JSON)
+        report_str += write_data_json(way_dir=WAY_DIR, file_name="Detailed info dirs", dump_dict=INFO_PATHS_FOR_JSON)
         report_str += write_dict_info_paths_to_html("Detailed info dirs", INFO_PATHS_FOR_JSON)
 
         total_info_dict = get_dict_total_info(initial_path=initial_path)
-        report_str += write_data_json("Total info directory", total_info_dict)
+        report_str += write_data_json(way_dir=WAY_DIR, file_name="Total info directory", dump_dict=total_info_dict)
         report_str += write_dict_total_info_path_to_html("Total info directory", total_info_dict)
 
         SIZE_DIRS[initial_path] = TOTAL_SIZE

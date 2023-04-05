@@ -1,9 +1,8 @@
 import os
 import time
-import json
 import datetime
 from tkinter import ttk, Label
-from Common_functions import update_tkinter_window
+from Common_functions import update_tkinter_window, write_data_json, write_data_html
 
 # Consts for time and date
 today = datetime.datetime.today()
@@ -51,22 +50,6 @@ def create_dir() -> str:
         os.mkdir(WAY_DIR)
 
     return f"Folder: {WAY_DIR} -> was created!\n\n"
-
-
-def write_data_json(file_name: str, dump_dict: dict) -> str:
-    """ Writes the dictionary to a json file """
-    file_path = os.path.join(WAY_DIR, f"{file_name}.json")
-    with open(file=file_path, mode="w", encoding="utf-8") as write_file:
-        json.dump(dump_dict, write_file, ensure_ascii=False, indent=4)
-    return f"  File: {file_name}.json -> was created!\n"  # or file_path
-
-
-def write_data_html(file_name: str, write_text: str) -> str:
-    """ Writes the text to a html file """
-    file_path = os.path.join(WAY_DIR, f"{file_name}.html")
-    with open(file=file_path, mode="w", encoding="utf-8") as html_file:
-        html_file.write(write_text)
-    return f"  File: {file_name}.html -> was created!\n"  # or file_path
 
 
 def path_tree_to_html_str(initial_path: str, dict_paths: dict) -> str:
@@ -148,12 +131,13 @@ def check_path(dir_path: str, filenames: list[str], lower_level: int, search_typ
 def run_search_types(initial_path: str, search_type_files: list[str], progress_bar: ttk.Progressbar,
                      lb_step: Label, path_for_save: str = '') -> str:
     """ Main algorithm of program """
+    global CUR_DIR, WAY_DIR
+
     # deleting old values!
     zeroing_values()
 
     # setting the path to save
     if path_for_save:
-        global CUR_DIR, WAY_DIR
         CUR_DIR = path_for_save
         WAY_DIR = os.path.join(CUR_DIR, NAME_DIR)
 
@@ -180,15 +164,17 @@ def run_search_types(initial_path: str, search_type_files: list[str], progress_b
         report_str += create_dir()
         sorted_format_files = dict(sorted(TOTAL_COUNT_FILES.items(), key=lambda x: x[1], reverse=True))
 
-        report_str += write_data_json("Info found files", PATHS_FILES_DICT)
-        report_str += write_data_json("Total number of file types", sorted_format_files)
+        report_str += write_data_json(way_dir=WAY_DIR, file_name="Info found files", dump_dict=PATHS_FILES_DICT)
+        report_str += write_data_json(way_dir=WAY_DIR, file_name="Total number of file types",
+                                      dump_dict=sorted_format_files)
 
         str_html = dict_total_info_to_str_html(PATHS_FILES_DICT)
-        report_str += write_data_html("Info found files", str_html)
+        report_str += write_data_html(way_dir=WAY_DIR, file_name="Info found files", write_text=str_html)
 
         total_info_str_html = path_tree_to_html_str(initial_path, PATHS_FILES_DICT)
         total_info_str_html += total_count_types_to_str_html(sorted_format_files)
-        report_str += write_data_html("Total number of file types", total_info_str_html)
+        report_str += write_data_html(way_dir=WAY_DIR, file_name="Total number of file types",
+                                      write_text=total_info_str_html)
 
         return report_str
     else:
