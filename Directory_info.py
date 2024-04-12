@@ -115,7 +115,13 @@ class App:
             title = 'Select a folder for parsing'
         elif mode == 'save':
             title = 'Select a folder for saving'
-        initial_path = filedialog.askdirectory(title=title, initialdir="/")
+        options = {
+            "initialdir": "/",
+            "title": title,
+            "mustexist": False,
+        }
+
+        initial_path = filedialog.askdirectory(**options)
         if os.path.exists(initial_path):
             if mode == 'parse':
                 self.entry_path_parse.delete(0, END)
