@@ -2,7 +2,8 @@ import os
 import time
 import datetime
 from tkinter import ttk, Label
-from Common_functions import update_tkinter_window, write_data_json, write_data_html, write_data_txt
+from Backend_functions.Common_functions import write_data_json, write_data_html, write_data_txt
+from GUI.GUI_common_functions import update_tkinter_window
 
 # Consts for time and date
 today = datetime.datetime.today()

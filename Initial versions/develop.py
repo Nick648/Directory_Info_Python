@@ -1,6 +1,5 @@
 import tkinter as tk
 import magic
-
 import os
 from os.path import join, getsize
 import usb.core
@@ -11,6 +10,8 @@ import sys
 import psutil
 from psutil._common import bytes2human
 from ftplib import FTP
+from ppadb.client import Client as AdbClient
+import socket
 
 
 def mime_magic():  # Not good
@@ -85,21 +86,21 @@ def check_os():
 
 
 def check_usb():
-    devices = usb.core.find(find_all=True)
+    # devices = usb.core.find(find_all=True)
+    # for device in devices:
+    #     print("VID: {:04x}, PID: {:04x}".format(device.idVendor, device.idProduct))
+    #     # print(device[0])
+    #     print(f"\n{'~' * 50}\n")
 
-    for device in devices:
-        print("VID: {:04x}, PID: {:04x}".format(device.idVendor, device.idProduct))
-        print(device[0])
-        # for dev in usb.core.find(find_all=True):
-        #     # print(dev)
-        #     print("device bus:", dev.bus)
-        #     print("device address:", dev.address)
-        #     print("device port:", dev.port_number)
-        #     print("device speed:", dev.speed)
-        #     print("dev.bLength", dev.bLength)
-        #     print("dev.bNumConfigurations", dev.bNumConfigurations)
-        #     print("dev.bDeviceClass", dev.bDeviceClass)
-
+    for dev in usb.core.find(find_all=True):
+        # print(dev)
+        print("device bus:", dev.bus)
+        print("device address:", dev.address)
+        print("device port:", dev.port_number)
+        print("device speed:", dev.speed)
+        print("dev.bLength", dev.bLength)
+        print("dev.bNumConfigurations", dev.bNumConfigurations)
+        print("dev.bDeviceClass", dev.bDeviceClass)
         print(f"\n{'~' * 50}\n")
 
 
@@ -115,6 +116,29 @@ def check_ftp(host: str = r'ftp://', port: int = 2030, user: str = 'user', passw
     # print(ftp.login(user=user, passwd=password))
 
 
+def check_adb(host: str = r'ftp://', port: int = 2030, user: str = 'user', password: str = 'password'):
+    # Подключение к ADB серверу
+    # client = adb.AdbClient(host=host, port=port)
+
+    client = AdbClient(host=host, port=port)
+    print(client)
+    print(1)
+    device = client.device("emulator-5554")
+    print(device)
+    print(2)
+    print(client.version())
+    print(3)
+    print(client.devices())
+    print(4)
+
+    # Получение списка устройств
+    devices = client.devices()
+    print(f'{devices=}')
+
+    # Получаем список файлов и папок на устройстве
+    # files_list = device.list("/sdcard/")  # Можно указать любой путь на устройстве
+
+
 if __name__ == '__main__':
     # mime_magic()
     # check_colors_1()
@@ -122,5 +146,6 @@ if __name__ == '__main__':
     # check_psutil()
     # check_os()
     # check_usb()
-    check_ftp(host=r'192.168.1.136', port=4632, user='user0', password='pass')
+    # check_ftp(host=r'192.168.1.252', port=4611, user='user', password='pass')
+    # check_adb(host=r'192.168.1.252', port=4611)
     sys.exit()
