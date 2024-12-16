@@ -3,7 +3,7 @@ import ftplib
 from ftplib import FTP
 
 
-def display_tree_paths(tree: list):
+def display_tree_paths(tree: list) -> None:
     print(f'Result: {tree} \nLen: {len(tree)}')
     for path, file, dirs in tree:
         if path == "/":
@@ -89,11 +89,11 @@ class ConnectionToFtp(FTP):
             self.gen_ftp_walk(initial_path=(path + r"/" + dir_name), response=response)
         return response
 
-    def check_welcome(self):
+    def check_welcome(self) -> None:
         print(self.welcome)
 
-    def close_connect(self):
+    def close_connect(self) -> None:
         self.close()
 
-    def __str__(self):
-        print(f"Connect to {self.host}:{self.port} with login={self.login} and password={self.password}")
+    def __str__(self) -> str:
+        return f"Connect to {self.host}:{self.port} with login={self.login} and password={self.password}"

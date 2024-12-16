@@ -1,8 +1,9 @@
-from tkinter import *
-from tkinter import messagebox, ttk
+# from tkinter import *
+from tkinter import messagebox, ttk, Tk
 from GUI.GUI_common_functions import get_size_monitor
 from GUI.Frame_path_dir_info import FramePathDirInfo
 from GUI.Frame_ftp_dir_info import FrameFTPDirInfo
+from GUI.Frame_duplicate_files import FrameDuplicateFiles
 from data import Consts
 
 # CONSTs
@@ -19,8 +20,10 @@ class DirectoryInfoApp:
         tab_control = ttk.Notebook(self.root)
         self.tab_1 = FramePathDirInfo(master_frame=tab_control)
         self.tab_2 = FrameFTPDirInfo(master_frame=tab_control)
+        self.tab_3 = FrameDuplicateFiles(master_frame=tab_control)
         tab_control.add(self.tab_1, text='Use path')
         tab_control.add(self.tab_2, text='Use FTP')
+        tab_control.add(self.tab_3, text='Duplicate Files')
         tab_control.pack(expand=1, fill='both')
         # Creating another configurations
         self.set_options_window()

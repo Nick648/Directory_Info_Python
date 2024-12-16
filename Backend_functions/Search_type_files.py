@@ -1,56 +1,26 @@
 import os
 import time
-import datetime
-from tkinter import ttk, Label
-from Backend_functions.Common_functions import write_data_json, write_data_html
-from GUI.GUI_common_functions import update_tkinter_window
-
-# Consts for time and date
-today = datetime.datetime.today()
-date_y, date_m, date_d = today.year, today.month, today.day
-# time_h, time_m, time_s = today.hour, today.minute, today.second
+from Backend_functions.Common_functions import write_data_json, write_data_html, create_dir
+from GUI.My_progressbar import MyProgressBar
 
 # Name of directory
-DESKTOP_DIR = os.path.expanduser('~') + r'\Desktop'  # Full path to the desktop
-CUR_DIR_FILE = os.path.abspath(__file__)  # Full path to the file, with name file.py
 CUR_DIR = os.path.dirname(os.path.abspath(__file__))  # Without name file.py
 MAIN_NAME_DIR = f'File types parse'
-NAME_DIR = f'{MAIN_NAME_DIR} {date_d}_{date_m}_{date_y}'
-WAY_DIR = os.path.join(CUR_DIR, NAME_DIR)
+PATH_SAVE_RESULT = os.path.join(CUR_DIR, MAIN_NAME_DIR)
 
 # Files to search for
 PATHS_FILES_DICT = {}
 TOTAL_COUNT_FILES = {}
 
 
-def zeroing_values() -> None:
+def zeroing_values(path_for_save: str) -> None:
     """ Clearing old values before a new call """
-    global today, date_y, date_m, date_d, NAME_DIR, WAY_DIR, PATHS_FILES_DICT, TOTAL_COUNT_FILES
-    today = datetime.datetime.today()
-    date_y, date_m, date_d = today.year, today.month, today.day
-    NAME_DIR = f'{MAIN_NAME_DIR} {date_d}_{date_m}_{date_y}'
-    WAY_DIR = os.path.join(CUR_DIR, NAME_DIR)
+    global CUR_DIR, PATH_SAVE_RESULT, PATHS_FILES_DICT, TOTAL_COUNT_FILES
+    CUR_DIR = path_for_save
+    PATH_SAVE_RESULT, name_folder = create_dir(folder_creation_path=CUR_DIR, main_name_dir=MAIN_NAME_DIR,
+                                               create_folder=False)
     PATHS_FILES_DICT = {}
     TOTAL_COUNT_FILES = {}
-
-
-def create_dir() -> str:
-    """ Creating a folder for files """
-    global WAY_DIR, NAME_DIR
-
-    if not os.path.exists(WAY_DIR):  # Creating a folder for files
-        os.mkdir(WAY_DIR)
-
-    # If the folder is created, an additional one will be created with the version specified
-    else:
-        version = 1
-        while os.path.exists(WAY_DIR):
-            NAME_DIR = f'{MAIN_NAME_DIR} {date_d}_{date_m}_{date_y} version=={version}'
-            WAY_DIR = os.path.join(CUR_DIR, NAME_DIR)
-            version += 1
-        os.mkdir(WAY_DIR)
-
-    return f"Folder: {WAY_DIR} -> was created!\n\n"
 
 
 def path_tree_to_html_str(initial_path: str, dict_paths: dict) -> str:
@@ -129,52 +99,43 @@ def check_path(dir_path: str, filenames: list[str], lower_level: int, search_typ
     return False
 
 
-def run_search_types(initial_path: str, search_type_files: list[str], progress_bar: ttk.Progressbar,
-                     lb_step: Label, path_for_save: str = '') -> str:
+def run_search_types(initial_path: str, search_type_files: list[str], progress_bar: MyProgressBar,
+                     path_for_save: str = '') -> str:
     """ Main algorithm of program """
-    global CUR_DIR, WAY_DIR
-
-    # deleting old values!
-    zeroing_values()
-
-    # setting the path to save
-    if path_for_save:
-        CUR_DIR = path_for_save
-        WAY_DIR = os.path.join(CUR_DIR, NAME_DIR)
+    # deleting old values and setting the path to save!
+    zeroing_values(path_for_save=path_for_save)
 
     # parameters for tkinter
     max_val = 0
     for _ in os.walk(initial_path):
         max_val += 1
-    progress_bar['maximum'] = max_val
-    colors_dict = {'red': 255, 'green': 0, 'blue': 0}
+    progress_bar.set_max_val(max_value=max_val)
     step_color = 255 / max_val
-    current_step = 0
+    progress_bar.set_step_value(step_value=step_color)
     time_pause = 1 / max_val
 
     lower_level = initial_path.count("\\")
     for dir_path, dir_names, filenames in os.walk(initial_path):  # , topdown=False
-        current_step += 1
-        update_tkinter_window(progress_bar=progress_bar, lb_step=lb_step, current_step=current_step,
-                              max_val=max_val, colors_dict=colors_dict, step_color=step_color)
+        progress_bar.pb_step()
         check_path(dir_path=dir_path, filenames=filenames, lower_level=lower_level, search_type_files=search_type_files)
         time.sleep(time_pause)
 
     if PATHS_FILES_DICT:
-        report_str = ''
-        report_str += create_dir()
+        report_str = create_dir(folder_creation_path=path_for_save, main_name_dir=MAIN_NAME_DIR,
+                                create_folder=True)
         sorted_format_files = dict(sorted(TOTAL_COUNT_FILES.items(), key=lambda x: x[1], reverse=True))
 
-        report_str += write_data_json(way_dir=WAY_DIR, file_name="Info found files", dump_dict=PATHS_FILES_DICT)
-        report_str += write_data_json(way_dir=WAY_DIR, file_name="Total number of file types",
+        report_str += write_data_json(way_dir=PATH_SAVE_RESULT, file_name="Info found files",
+                                      dump_dict=PATHS_FILES_DICT)
+        report_str += write_data_json(way_dir=PATH_SAVE_RESULT, file_name="Total number of file types",
                                       dump_dict=sorted_format_files)
 
         str_html = dict_total_info_to_str_html(PATHS_FILES_DICT)
-        report_str += write_data_html(way_dir=WAY_DIR, file_name="Info found files", write_text=str_html)
+        report_str += write_data_html(way_dir=PATH_SAVE_RESULT, file_name="Info found files", write_text=str_html)
 
         total_info_str_html = path_tree_to_html_str(initial_path, PATHS_FILES_DICT)
         total_info_str_html += total_count_types_to_str_html(sorted_format_files)
-        report_str += write_data_html(way_dir=WAY_DIR, file_name="Total number of file types",
+        report_str += write_data_html(way_dir=PATH_SAVE_RESULT, file_name="Total number of file types",
                                       write_text=total_info_str_html)
 
         return report_str

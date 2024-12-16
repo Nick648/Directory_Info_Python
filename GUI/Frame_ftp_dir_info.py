@@ -1,5 +1,5 @@
 from tkinter import *
-from tkinter import messagebox
+from tkinter import messagebox, ttk
 import socket
 import time
 from threading import Thread
@@ -8,6 +8,7 @@ from Backend_functions import Common_functions, Search_type_files_FTP
 from GUI.GUI_common_functions import *
 from Backend_functions.Work_with_ftp import ConnectionToFtp
 from GUI.My_widget_prompts_for_Entry import MyWidgetPrompts
+from GUI.My_progressbar import MyProgressBar
 from data import Consts
 
 
@@ -508,18 +509,16 @@ class FrameFTPDirInfo(ttk.Frame):
                         types_search_files.append('.' + type_file.lower())
             if types_search_files:
                 self.disable_objects_on_frame()
-                progress_bar = ttk.Progressbar(master=self, orient="horizontal", length=170, value=0)
-                progress_bar.place(relx=0.5, rely=0.85, anchor=N)
-                lb_step = Label(master=self, text='', font=('Arial', 12, 'italic', 'bold'), fg='orange red')
-                lb_step.place(relx=0.5, rely=0.8, anchor=N)
+                progress_bar = MyProgressBar(master_frame=self)
+                progress_bar.progress_bar_place(rel_x=0.5, rel_y=0.85, in_anchor=N)
+                progress_bar.label_step_place(rel_x=0.5, rel_y=0.8, in_anchor=N)
                 report = Search_type_files_FTP.run_search_types(initial_path=self.cmbx_path.get(),
                                                                 search_type_files=types_search_files,
-                                                                progress_bar=progress_bar, lb_step=lb_step,
+                                                                progress_bar=progress_bar,
                                                                 tree_paths=self.tree_paths,
                                                                 path_for_save=path_for_save)
                 messagebox.showinfo(title="Feedback report", message=report)
                 progress_bar.destroy()
-                lb_step.destroy()
                 self.reset_frame()
             else:
                 messagebox.showwarning(title="Warning", message="You need to select the search parameters!")

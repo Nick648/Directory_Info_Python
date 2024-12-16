@@ -1,9 +1,37 @@
 import json
 import os
 import re
+import datetime
 from data import Consts
 
 MAX_SIZE_PROMPTS = 3
+
+
+def create_dir(folder_creation_path: str, main_name_dir: str, create_folder: bool = True) -> tuple[str, str] | str:
+    """ Creating a folder for files
+    Return: WAY_DIRECTORY, NAME_DIRECTORY, REPORT
+    """
+    today = datetime.datetime.today()
+    date_y, date_m, date_d = today.year, today.month, today.day
+    name_dir = f'{main_name_dir} {date_d}_{date_m}_{date_y}'
+    way_dir = os.path.join(folder_creation_path, name_dir)
+
+    if not os.path.exists(way_dir) and create_folder:  # Creating a folder for files
+        os.mkdir(way_dir)
+
+    else:  # If the folder is created, an additional one will be created with the version specified
+        version = 1
+        while os.path.exists(way_dir):
+            name_dir = f'{main_name_dir} {date_d}_{date_m}_{date_y} version=={version}'
+            way_dir = os.path.join(folder_creation_path, name_dir)
+            version += 1
+        if create_folder:
+            os.mkdir(way_dir)
+
+    if create_folder:
+        return f"Folder: {way_dir} -> was created!\n\n"
+    else:
+        return way_dir, name_dir
 
 
 def write_data_json(way_dir: str, file_name: str, dump_dict: dict) -> str:
@@ -49,7 +77,7 @@ def write_prompts_dict(prompts: dict) -> None:
         print(f'Error in Common_functions.py in write_prompts_dict() -> {ex}')
 
 
-def overwrite_input_prompts(**kwargs):
+def overwrite_input_prompts(**kwargs) -> None:
     prompts = get_prompts_dict()
     for key, val in kwargs.items():
         need_list = prompts[key]
@@ -63,13 +91,13 @@ def overwrite_input_prompts(**kwargs):
     write_prompts_dict(prompts)
 
 
-def delete_prompt(selected_key: str, deleted_value: [str | int]):
+def delete_prompt(selected_key: str, deleted_value: [str | int]) -> None:
     prompts = get_prompts_dict()
     prompts[selected_key].remove(deleted_value)
     write_prompts_dict(prompts)
 
 
-def search_prompts(key: str, input_data: [str | int]):
+def search_prompts(key: str, input_data: [str | int]) -> list[str | int]:
     prompts = get_prompts_dict()
     search_list = prompts[key]
     return_list = []

@@ -1,13 +1,13 @@
 from tkinter import *
 from tkinter import messagebox, ttk
 from GUI.My_check_button import get_frame_options
-from Backend_functions import Total_info_files_dir, Search_type_files
+from Backend_functions import Total_duplicate_info
 from GUI.My_progressbar import MyProgressBar
 from GUI.GUI_common_functions import *
 from data import Consts
 
 
-class FramePathDirInfo(ttk.Frame):
+class FrameDuplicateFiles(ttk.Frame):
 
     def __init__(self, master_frame: ttk.Notebook):
         super().__init__(master=master_frame)
@@ -30,7 +30,7 @@ class FramePathDirInfo(ttk.Frame):
 
     def add_objects(self) -> None:
         # TITLE PC
-        lb_title = Label(master=self, text=' DIR_INFO_PC ', font=('Cooper Black', 18, 'italic'), fg='magenta')
+        lb_title = Label(master=self, text=' DUPLICATE_FILES ', font=('Cooper Black', 18, 'italic'), fg='magenta')
         lb_title.place(relx=0.5, rely=0.01, anchor=N)
 
         # LABEL PATH FOR PARSING
@@ -202,7 +202,7 @@ class FramePathDirInfo(ttk.Frame):
             progress_bar = MyProgressBar(master_frame=self)
             progress_bar.progress_bar_place(rel_x=0.5, rel_y=0.78, in_anchor=N)
             progress_bar.label_step_place(rel_x=0.5, rel_y=0.72, in_anchor=N)
-            report = Total_info_files_dir.run_total_search(initial_path=self.entry_path_parse.get(),
+            report = Total_duplicate_info.run_total_search(initial_path=self.entry_path_parse.get(),
                                                            progress_bar=progress_bar,
                                                            path_for_save=path_for_save)
             messagebox.showinfo(title="Feedback report", message=report)
@@ -221,10 +221,10 @@ class FramePathDirInfo(ttk.Frame):
                 progress_bar = MyProgressBar(master_frame=self)
                 progress_bar.progress_bar_place(rel_x=0.5, rel_y=0.78, in_anchor=N)
                 progress_bar.label_step_place(rel_x=0.5, rel_y=0.72, in_anchor=N)
-                report = Search_type_files.run_search_types(initial_path=self.entry_path_parse.get(),
-                                                            search_type_files=types_search_files,
-                                                            progress_bar=progress_bar,
-                                                            path_for_save=path_for_save)
+                report = Total_duplicate_info.run_total_search(initial_path=self.entry_path_parse.get(),
+                                                               progress_bar=progress_bar,
+                                                               path_for_save=path_for_save,
+                                                               search_type_files=types_search_files)
                 messagebox.showinfo(title="Feedback report", message=report)
                 progress_bar.destroy()
                 self.activate_object_on_frame()
