@@ -8,11 +8,6 @@ from data import Consts
 # CONSTs
 APP_WIDTH, APP_HEIGHT = 400, 600
 
-OPTIONS_NAME = ['Media files', 'Audio files', 'Video files',
-                'Document files', 'Office files', 'Database files',
-                'Archive files', 'Website files', 'Executable files',
-                'Program files']
-
 
 class DirectoryInfoApp:
     """The main class of the application, which describes all the GUI elements."""

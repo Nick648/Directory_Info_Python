@@ -56,9 +56,7 @@ class FrameFTPDirInfo(ttk.Frame):
         self.btn_start_ftp = Button(master=self)
         # Storages
         self.tree_paths = []
-        self.host_prompts = MyWidgetPrompts(master_frame=self, widget_name="host", widget_entry=self.entry_host_parse)
-        self.port_prompts = MyWidgetPrompts(master_frame=self, widget_name="port", widget_entry=self.entry_port_parse)
-        self.login_prompts = MyWidgetPrompts(master_frame=self, widget_name="login", widget_entry=self.entry_login_ftp)
+        self.prompts_for_entry = MyWidgetPrompts(master_frame=self)
 
         self.add_objects()
 
@@ -82,9 +80,15 @@ class FrameFTPDirInfo(ttk.Frame):
         self.entry_host_parse = Entry(master=self, validate="key", validatecommand=check_host, width=14,
                                       bg='light grey', font=('Times', 13,), fg='purple', cursor='pencil', takefocus=0)
         self.entry_host_parse.place(relx=0.05, rely=0.1, anchor=NW)
-        self.entry_host_parse.bind("<FocusIn>", lambda e: self.host_prompts.focus_in_for_prompt(e))
-        self.entry_host_parse.bind("<KeyRelease>", lambda e: self.host_prompts.focus_in_for_prompt(e))
-        self.entry_host_parse.bind("<FocusOut>", self.host_prompts.focus_out_for_prompt)
+        self.entry_host_parse.bind("<FocusIn>",
+                                   lambda _: self.prompts_for_entry.focus_in_widget(key_prompt="host",
+                                                                                    widget_entry=self.entry_host_parse
+                                                                                    ))
+        self.entry_host_parse.bind("<KeyRelease>",
+                                   lambda _: self.prompts_for_entry.focus_in_widget(key_prompt="host",
+                                                                                    widget_entry=self.entry_host_parse
+                                                                                    ))
+        self.entry_host_parse.bind("<FocusOut>", self.prompts_for_entry.focus_out_widget)
 
         # LABEL VALID HOST PARSING
         self.lb_valid_host = Label(master=self, text='', font=('Times', 9))
@@ -99,9 +103,15 @@ class FrameFTPDirInfo(ttk.Frame):
         self.entry_port_parse = Entry(master=self, validate="key", validatecommand=check_port, width=10,
                                       bg='light grey', font=('Times', 13,), fg='purple', cursor='pencil', takefocus=0)
         self.entry_port_parse.place(relx=0.47, rely=0.1, anchor=NW)
-        self.entry_port_parse.bind("<FocusIn>", lambda e: self.port_prompts.focus_in_for_prompt(e))
-        self.entry_port_parse.bind("<KeyRelease>", lambda e: self.port_prompts.focus_in_for_prompt(e))
-        self.entry_port_parse.bind("<FocusOut>", self.port_prompts.focus_out_for_prompt)
+        self.entry_port_parse.bind("<FocusIn>",
+                                   lambda _: self.prompts_for_entry.focus_in_widget(key_prompt="port",
+                                                                                    widget_entry=self.entry_port_parse
+                                                                                    ))
+        self.entry_port_parse.bind("<KeyRelease>",
+                                   lambda _: self.prompts_for_entry.focus_in_widget(key_prompt="port",
+                                                                                    widget_entry=self.entry_port_parse
+                                                                                    ))
+        self.entry_port_parse.bind("<FocusOut>", self.prompts_for_entry.focus_out_widget)
 
         # LABEL VALID PORT PARSING
         self.lb_valid_port = Label(master=self, text='', font=('Times', 9))
@@ -118,9 +128,15 @@ class FrameFTPDirInfo(ttk.Frame):
 
         # ENTRY LOGIN SERVER
         self.entry_login_ftp = Entry(master=self, width=10, bg='light grey', font=('Times', 13,), fg='purple')
-        self.entry_login_ftp.bind("<FocusIn>", lambda e: self.login_prompts.focus_in_for_prompt(e))
-        self.entry_login_ftp.bind("<KeyRelease>", lambda e: self.login_prompts.focus_in_for_prompt(e))
-        self.entry_login_ftp.bind("<FocusOut>", self.login_prompts.focus_out_for_prompt)
+        self.entry_login_ftp.bind("<FocusIn>",
+                                  lambda _: self.prompts_for_entry.focus_in_widget(key_prompt="login",
+                                                                                   widget_entry=self.entry_login_ftp
+                                                                                   ))
+        self.entry_login_ftp.bind("<KeyRelease>",
+                                  lambda _: self.prompts_for_entry.focus_in_widget(key_prompt="login",
+                                                                                   widget_entry=self.entry_login_ftp
+                                                                                   ))
+        self.entry_login_ftp.bind("<FocusOut>", self.prompts_for_entry.focus_out_widget)
 
         # LABEL PASSWORD SERVER
         self.lb_password_ftp = Label(master=self, text='Password:', font=('Arial', 10, 'italic'), fg='black')
@@ -168,7 +184,7 @@ class FrameFTPDirInfo(ttk.Frame):
         self.btn_folder_save_ftp = Button(master=self,
                                           command=lambda: get_initial_path(mode='save_ftp',
                                                                            entry_path=self.entry_path_save_ftp),
-                                          image=photo_folder_save, activebackground="pink", borderwidth=0)
+                                          activebackground="pink", borderwidth=0, image=photo_folder_save)
         self.btn_folder_save_ftp.image = photo_folder_save
 
         # LABEL VALID PATH SAVING
