@@ -77,6 +77,37 @@ def write_prompts_dict(prompts: dict) -> None:
         print(f'Error in Common_functions.py in write_prompts_dict() -> {ex}')
 
 
+def get_max_str_size(size_bytes: int) -> str:
+    """ Return str of max format of size """
+    if size_bytes // 1024 == 0:
+        size_bytes = "{:.3f}".format(size_bytes)
+        return f'{size_bytes} bytes'
+    size_kilobytes = size_bytes / 1024
+    if size_kilobytes // 1024 == 0:
+        size_kilobytes = "{:.3f}".format(size_kilobytes)
+        return f'{size_kilobytes} KB'
+    size_megabytes = size_kilobytes / 1024
+    if size_megabytes // 1024 == 0:
+        size_megabytes = "{:.3f}".format(size_megabytes)
+        return f'{size_megabytes} MB'
+
+    size_gigabytes = size_megabytes / 1024
+    size_gigabytes = "{:.3f}".format(size_gigabytes)
+    return f'{size_gigabytes} GB'
+
+
+def get_all_str_sizes(size_bytes: int) -> str:
+    """ Return str of different format of size """
+    size_kilobytes = size_bytes / 1024
+    size_megabytes = size_kilobytes / 1024
+    size_gigabytes = size_megabytes / 1024
+
+    size_kilobytes = "{:.3f}".format(size_kilobytes)
+    size_megabytes = "{:.3f}".format(size_megabytes)
+    size_gigabytes = "{:.3f}".format(size_gigabytes)
+    return f"{size_bytes} bytes = {size_kilobytes} KB = {size_megabytes} MB = {size_gigabytes} GB"
+
+
 def overwrite_input_prompts(**kwargs) -> None:
     prompts = get_prompts_dict()
     for key, val in kwargs.items():
@@ -106,3 +137,12 @@ def search_prompts(key: str, input_data: [str | int]) -> list[str | int]:
         if finder and input_data != str(item):
             return_list.append(item)
     return return_list
+
+
+def check_similarity_subfolders(check_path: str, list_paths: list[str]) -> bool:
+    check_path = os.path.normpath(check_path)
+    for path in list_paths:
+        path = os.path.normpath(path)
+        if check_path == path or path in check_path:
+            return True
+    return False

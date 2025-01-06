@@ -60,6 +60,24 @@ def get_initial_path(mode: str, entry_path: Entry) -> None:
         entry_path.insert(0, initial_path)
 
 
+def get_path_file_dir(mode: str = "dir", parent=Tk) -> str:
+    if mode == "dir":
+        options = {
+            "initialdir": "/",
+            "title": 'Select a folder',
+            "mustexist": False,
+            "parent": parent
+        }
+    else:
+        options = {"initialdir": "/", "title": 'Select a file', "parent": parent}
+
+    if mode == "dir":
+        initial_path = filedialog.askdirectory(**options)
+    else:
+        initial_path = filedialog.askopenfilename(**options)
+    return initial_path
+
+
 def get_frame_list_gif(file: str) -> list:
     frame_index = 0
     frame_list = []

@@ -1,10 +1,11 @@
 import os
 import time
-from Backend_functions.Common_functions import write_data_json, create_dir
+from Backend_functions.Common_functions import write_data_json, create_dir, get_max_str_size, \
+    check_similarity_subfolders
 from GUI.My_progressbar import MyProgressBar
 
 # Name of directory
-CUR_DIR = os.path.dirname(os.path.abspath(__file__))  # Without name file.py
+CUR_DIR = os.path.dirname(os.path.abspath(__file__))
 MAIN_NAME_DIR = "Info duplicate files"
 PATH_SAVE_RESULT = os.path.join(CUR_DIR, MAIN_NAME_DIR)
 
@@ -24,24 +25,30 @@ def zeroing_values(path_for_save: str) -> None:
 
 
 def get_dict_total_info(initial_path: str) -> dict:
-    print(f'{initial_path=}; {TOTAL_COUNT_FILES=}; {TOTAL_DUPLICATE_FILES=};')
-    print("LIST_DUPLICATE_FILES\n", LIST_DUPLICATE_FILES)
-    print("DICT_ALL_FILES\n", DICT_ALL_FILES)
     total_info_dict, duplicate_paths = dict(), dict()
+    total_size_duplicate_files = 0
     total_info_dict["Initial path"] = initial_path
     total_info_dict["Total files"] = TOTAL_COUNT_FILES
     total_info_dict["Total duplicate files"] = TOTAL_DUPLICATE_FILES
     for name in LIST_DUPLICATE_FILES:
-        duplicate_paths[name] = DICT_ALL_FILES[name]
+        file_size = os.path.getsize(DICT_ALL_FILES[name][0])
+        total_size_duplicate_files += (file_size * (len(DICT_ALL_FILES[name]) - 1))
+        duplicate_paths[name] = {"File size": get_max_str_size(file_size),
+                                 "Paths": DICT_ALL_FILES[name]}
+    total_info_dict["Total size duplicate files"] = get_max_str_size(total_size_duplicate_files)
     total_info_dict["duplicate files"] = duplicate_paths
     return total_info_dict
 
 
-def parse_info_abot_files(dir_path: str, filenames: list[str], search_type_files: list[str] = None) -> None:
+def parse_info_abot_files(dir_path: str, filenames: list[str], exception_files: list[str] = None,
+                          search_type_files: list[str] = None) -> None:
     global TOTAL_COUNT_FILES, TOTAL_DUPLICATE_FILES, DICT_ALL_FILES, LIST_DUPLICATE_FILES
     TOTAL_COUNT_FILES += len(filenames)
 
     for name in filenames:
+        if exception_files and name in exception_files:
+            print(name, name in exception_files)
+            continue
         path_name = os.path.join(dir_path, name)
 
         cur_file_name, file_extension = os.path.splitext(name)
@@ -61,6 +68,7 @@ def parse_info_abot_files(dir_path: str, filenames: list[str], search_type_files
 
 
 def run_total_search(initial_path: str, progress_bar: MyProgressBar, path_for_save: str,
+                     exception_files: list[str] = None, exception_dirs: list[str] = None,
                      search_type_files: list[str] = None) -> str:
     """ Main algorithm of program """
     # deleting old values and setting the path to save!
@@ -76,8 +84,12 @@ def run_total_search(initial_path: str, progress_bar: MyProgressBar, path_for_sa
     time_pause = 1 / max_val
 
     for dir_path, dir_names, filenames in os.walk(initial_path):  # , topdown=False
+        check_key = check_similarity_subfolders(check_path=dir_path, list_paths=exception_dirs)
+        if check_key:
+            continue
         progress_bar.pb_step()
-        parse_info_abot_files(dir_path=dir_path, filenames=filenames, search_type_files=search_type_files)
+        parse_info_abot_files(dir_path=dir_path, filenames=filenames, exception_files=exception_files,
+                              search_type_files=search_type_files)
         time.sleep(time_pause)
 
     if TOTAL_DUPLICATE_FILES:

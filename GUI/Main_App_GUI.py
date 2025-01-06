@@ -1,4 +1,3 @@
-# from tkinter import *
 from tkinter import messagebox, ttk, Tk
 from GUI.GUI_common_functions import get_size_monitor
 from GUI.Frame_path_dir_info import FramePathDirInfo
@@ -41,7 +40,6 @@ class DirectoryInfoApp:
     def set_configures(self) -> None:
         self.root.title("Directory Info")
         self.root.iconbitmap(default=fr"{Consts.PATH_DATA_DIR}/Open-folder-search.ico")
-        # self.root.configure(background="grey")
         # self.root.wm_attributes('-transparentcolor', self.root['bg'])  # Прозрачное приложение!
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)  # Add event for close window
 

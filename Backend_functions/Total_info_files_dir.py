@@ -1,6 +1,7 @@
 import os
 import time
-from Backend_functions.Common_functions import write_data_json, write_data_html, write_data_txt, create_dir
+from Backend_functions.Common_functions import write_data_json, write_data_html, write_data_txt, create_dir, \
+    get_max_str_size, get_all_str_sizes
 from GUI.My_progressbar import MyProgressBar
 
 # Name of directory
@@ -169,37 +170,6 @@ def get_max_file(path_with_max_file: str):
         return None
 
 
-def get_max_str_size(size_bytes: int) -> str:
-    """ Return str of max format of size """
-    if size_bytes // 1024 == 0:
-        size_bytes = "{:.3f}".format(size_bytes)
-        return f'{size_bytes} bytes'
-    size_kilobytes = size_bytes / 1024
-    if size_kilobytes // 1024 == 0:
-        size_kilobytes = "{:.3f}".format(size_kilobytes)
-        return f'{size_kilobytes} KB'
-    size_megabytes = size_kilobytes / 1024
-    if size_megabytes // 1024 == 0:
-        size_megabytes = "{:.3f}".format(size_megabytes)
-        return f'{size_megabytes} MB'
-
-    size_gigabytes = size_megabytes / 1024
-    size_gigabytes = "{:.3f}".format(size_gigabytes)
-    return f'{size_gigabytes} GB'
-
-
-def get_str_size(size_bytes: int) -> str:
-    """ Return str of different format of size """
-    size_kilobytes = size_bytes / 1024
-    size_megabytes = size_kilobytes / 1024
-    size_gigabytes = size_megabytes / 1024
-
-    size_kilobytes = "{:.3f}".format(size_kilobytes)
-    size_megabytes = "{:.3f}".format(size_megabytes)
-    size_gigabytes = "{:.3f}".format(size_gigabytes)
-    return f"{size_bytes} bytes = {size_kilobytes} KB = {size_megabytes} MB = {size_gigabytes} GB"
-
-
 def get_dict_info_dir_path(dir_names: list, filenames: list, format_files_dir: dict, total_size_dir: int,
                            dif_level: int) -> dict:
     """ Return dict with all information about directory """
@@ -216,7 +186,7 @@ def get_dict_info_dir_path(dir_names: list, filenames: list, format_files_dir: d
     if format_files_dir:
         path_info["Formats (count)"] = f"{format_files_dir}"
         path_info["Number of formats"] = len(format_files_dir)
-    path_info["Total size files"] = get_str_size(total_size_dir)
+    path_info["Total size files"] = get_all_str_sizes(total_size_dir)
 
     return path_info
 
@@ -260,7 +230,7 @@ def get_dict_total_info(initial_path: str) -> dict:
     total_info_dict["Initial path"] = initial_path
     total_info_dict["Total folders"] = TOTAL_DIRS
     total_info_dict["Total files"] = TOTAL_FILES
-    total_info_dict["Total size"] = get_str_size(TOTAL_SIZE)
+    total_info_dict["Total size"] = get_all_str_sizes(TOTAL_SIZE)
     total_info_dict["Number of formats"] = len(TOTAL_FORMAT_FILES)
     sorted_format_files = dict(sorted(TOTAL_FORMAT_FILES.items(), key=lambda x: x[1], reverse=True))
     total_info_dict["Formats (count)"] = sorted_format_files

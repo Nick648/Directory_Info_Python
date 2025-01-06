@@ -3,6 +3,7 @@ from tkinter import messagebox, ttk
 from GUI.My_check_button import get_frame_options
 from Backend_functions import Total_duplicate_info
 from GUI.My_progressbar import MyProgressBar
+from GUI.Exception_table_GUI import ExceptionTreeView
 from GUI.GUI_common_functions import *
 from data import Consts
 
@@ -12,6 +13,7 @@ class FrameDuplicateFiles(ttk.Frame):
     def __init__(self, master_frame: ttk.Notebook):
         super().__init__(master=master_frame)
         self.master_frame = master_frame
+        self.ex_tree_view = ExceptionTreeView(master=self)
         # Elements Page Path
         self.entry_path_parse = Entry(master=self)
         self.btn_folder_parse = Button(master=self)
@@ -25,12 +27,13 @@ class FrameDuplicateFiles(ttk.Frame):
         self.rad_options = []
         self.frame_options = LabelFrame(master=self, text="Options")
         self.cb_options = []
+        self.btn_exceptions = Button(master=self)
         self.btn_start = Button(master=self)
         self.add_objects()
 
     def add_objects(self) -> None:
         # TITLE PC
-        lb_title = Label(master=self, text=' DUPLICATE_FILES ', font=('Cooper Black', 18, 'italic'), fg='magenta')
+        lb_title = Label(master=self, text=' DUPLICATE_FILES_INFO ', font=('Cooper Black', 18, 'italic'), fg='magenta')
         lb_title.place(relx=0.5, rely=0.01, anchor=N)
 
         # LABEL PATH FOR PARSING
@@ -101,6 +104,13 @@ class FrameDuplicateFiles(ttk.Frame):
         # CHECKBUTTON FOR OPTIONS
         self.cb_options = get_frame_options(master_frame=self.frame_options, row_options_count=ROW_OPTIONS_COUNT,
                                             col_options_count=COL_OPTIONS_COUNT, option_names=LIST_OPTION_NAMES)
+
+        # BUTTON EXCEPTION
+        self.btn_exceptions = Button(master=self, text="Exception", font=('Comic Sans MC', 10, 'italic', 'bold'),
+                                     command=lambda: self.ex_tree_view.display(),
+                                     activeforeground="blue", activebackground="pink", relief='groove',
+                                     fg='black', bg='grey', width=8, height=1)
+        self.btn_exceptions.place(relx=0.87, rely=0.92, anchor=N)
 
         # BUTTON FOR START APP
         self.btn_start = Button(master=self, text="Start parsing", font=('Comic Sans MC', 16, 'italic', 'bold'),
@@ -195,16 +205,21 @@ class FrameDuplicateFiles(ttk.Frame):
             messagebox.showwarning(title="Warning", message="You need to select the search parameter!")
             return
 
+        path_for_parse = self.entry_path_parse.get()
         path_for_save = self.entry_path_save.get()
+        exception_files = self.ex_tree_view.get_exception_files()
+        exception_dirs = self.ex_tree_view.get_exception_dirs()
 
         if self.selected_op_rad.get() == 1:  # Total search
             self.disable_objects_on_frame()
             progress_bar = MyProgressBar(master_frame=self)
             progress_bar.progress_bar_place(rel_x=0.5, rel_y=0.78, in_anchor=N)
             progress_bar.label_step_place(rel_x=0.5, rel_y=0.72, in_anchor=N)
-            report = Total_duplicate_info.run_total_search(initial_path=self.entry_path_parse.get(),
+            report = Total_duplicate_info.run_total_search(initial_path=path_for_parse,
                                                            progress_bar=progress_bar,
-                                                           path_for_save=path_for_save)
+                                                           path_for_save=path_for_save,
+                                                           exception_files=exception_files,
+                                                           exception_dirs=exception_dirs)
             messagebox.showinfo(title="Feedback report", message=report)
             progress_bar.destroy()
             self.activate_object_on_frame()
@@ -221,9 +236,11 @@ class FrameDuplicateFiles(ttk.Frame):
                 progress_bar = MyProgressBar(master_frame=self)
                 progress_bar.progress_bar_place(rel_x=0.5, rel_y=0.78, in_anchor=N)
                 progress_bar.label_step_place(rel_x=0.5, rel_y=0.72, in_anchor=N)
-                report = Total_duplicate_info.run_total_search(initial_path=self.entry_path_parse.get(),
+                report = Total_duplicate_info.run_total_search(initial_path=path_for_parse,
                                                                progress_bar=progress_bar,
                                                                path_for_save=path_for_save,
+                                                               exception_files=exception_files,
+                                                               exception_dirs=exception_dirs,
                                                                search_type_files=types_search_files)
                 messagebox.showinfo(title="Feedback report", message=report)
                 progress_bar.destroy()
