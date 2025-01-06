@@ -28,7 +28,7 @@ def get_dict_total_info(initial_path: str) -> dict:
     total_info_dict, duplicate_paths = dict(), dict()
     total_size_duplicate_files = 0
     total_info_dict["Initial path"] = initial_path
-    total_info_dict["Total files"] = TOTAL_COUNT_FILES
+    total_info_dict["Total checked files"] = TOTAL_COUNT_FILES
     total_info_dict["Total duplicate files"] = TOTAL_DUPLICATE_FILES
     for name in LIST_DUPLICATE_FILES:
         file_size = os.path.getsize(DICT_ALL_FILES[name][0])
@@ -47,7 +47,6 @@ def parse_info_abot_files(dir_path: str, filenames: list[str], exception_files: 
 
     for name in filenames:
         if exception_files and name in exception_files:
-            print(name, name in exception_files)
             continue
         path_name = os.path.join(dir_path, name)
 
